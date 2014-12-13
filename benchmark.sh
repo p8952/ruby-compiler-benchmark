@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -o errexit
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 function EMERGE() {
 	set +e
@@ -14,12 +13,42 @@ function EMERGE() {
 }
 
 function SETCOMP() {
-	if [[ $1 == "gcc:4.7" ]]; then
-		echo "gcc:4.7"
-	elif [[ $1 == "gcc:4.8" ]]; then
-		echo "gcc:4.8"
-	elif [[ $1 == "clang:0/3.5" ]]; then
-		echo "clang:0/3.5"
+	if [[ $1 == "gcc_4.4_O2" ]]; then
+		gcc --version | head -n 1
+
+	elif [[ $1 == "gcc_4.4_O3" ]]; then
+		gcc --version | head -n 1
+
+	elif [[ $1 == "gcc_4.7_O2" ]]; then
+		gcc --version | head -n 1
+
+	elif [[ $1 == "gcc_4.7_O3" ]]; then
+		gcc --version | head -n 1
+
+	elif [[ $1 == "gcc_4.8_O2" ]]; then
+		gcc --version | head -n 1
+
+	elif [[ $1 == "gcc_4.8_O3" ]]; then
+		gcc --version | head -n 1
+
+	elif [[ $1 == "gcc_4.9_O2" ]]; then
+		gcc --version | head -n 1
+
+	elif [[ $1 == "gcc_4.9_O3" ]]; then
+		gcc --version | head -n 1
+
+	elif [[ $1 == "clang_3.2" ]]; then
+		clang --version | head -n 1
+
+	elif [[ $1 == "clang_3.3" ]]; then
+		clang --version | head -n 1
+
+	elif [[ $1 == "clang_3.4" ]]; then
+		clang --version | head -n 1
+
+	elif [[ $1 == "clang_3.5" ]]; then
+		clang --version | head -n 1
+
 	fi
 }
 
@@ -31,18 +60,23 @@ function BENCH() {
 	cd ..
 }
 
-PREPARE
+COMPILERS=(
+	gcc_4.4_O2
+	gcc_4.4_O3
+	gcc_4.7_O2
+	gcc_4.7_O3
+	gcc_4.8_O2
+	gcc_4.8_O3
+	gcc_4.9_O2
+	gcc_4.9_O3
+	clang_3.2
+	clang_3.3
+	clang_3.4
+	clang_3.5
+	)
 
-exit
-
-SETCOMP "gcc:4.7"
-EMERGE "dev-lang/ruby:2.1"
-BENCH
-
-SETCOMP "gcc:4.8"
-EMERGE "dev-lang/ruby:2.1"
-BENCH
-
-SETCOMP "clang:0/3.5"
-EMERGE "dev-lang/ruby:2.1"
-BENCH
+for COMPILER in "${COMPILERS[@]}"; do
+	SETCOMP "$COMPILER"
+	#EMERGE "dev-lang/ruby:2.1"
+	#BENCH
+done
