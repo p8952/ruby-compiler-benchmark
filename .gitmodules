@@ -1,0 +1,3 @@
+[submodule "ruby-benchmark-suite"]
+	path = ruby-benchmark-suite
+	url = git://github.com/acangiano/ruby-benchmark-suite.git
