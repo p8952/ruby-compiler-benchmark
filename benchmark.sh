@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -o errexit
 
+function PREPARE() {
+	sudo rm -rf /var/tmp/portage/* || true
+	git clone git://github.com/acangiano/ruby-benchmark-suite.git || true
+	rm -rf ruby-benchmark-suite/results/* || true
+}
+
 function EMERGE() {
 	set +e
 	sudo emerge --pretend --quiet $1
@@ -9,102 +15,23 @@ function EMERGE() {
 		sudo etc-update --automode -5
 	fi
 	set -e
-	sudo emerge --usepkg --quiet $1
+	sudo emerge --quiet $1
 }
 
 function SETCOMP() {
-	if [[ $1 == "gcc_4.4_O2" ]]; then
-		sudo gcc-config "x86_64-pc-linux-gnu-4.4.7" > /dev/null 2>&1
-		source /etc/profile
-		echo "dev-lang/ruby O2" | sudo tee /etc/portage/package.env > /dev/null
-		gcc --version | head -n 1
-		cat /etc/portage/package.env
-		echo ""
+	COMPILER=$1
+	VERSION=$2
+	OPTIMIZATION=$3
 
-	elif [[ $1 == "gcc_4.4_O3" ]]; then
-		sudo gcc-config "x86_64-pc-linux-gnu-4.4.7" > /dev/null 2>&1
-		source /etc/profile
-		echo "dev-lang/ruby O3" | sudo tee /etc/portage/package.env > /dev/null
-		gcc --version | head -n 1
-		cat /etc/portage/package.env
-		echo ""
+	echo "dev-lang/ruby $OPTIMIZATION" | sudo tee /etc/portage/package.env > /dev/null
 
-	elif [[ $1 == "gcc_4.7_O2" ]]; then
-		sudo gcc-config "x86_64-pc-linux-gnu-4.7.3" > /dev/null 2>&1
+	if [[ $COMPILER == "gcc" ]]; then
+		sudo gcc-config "$VERSION" > /dev/null 2>&1
 		source /etc/profile
-		echo "dev-lang/ruby O2" | sudo tee /etc/portage/package.env > /dev/null
 		gcc --version | head -n 1
-		cat /etc/portage/package.env
-		echo ""
-
-	elif [[ $1 == "gcc_4.7_O3" ]]; then
-		sudo gcc-config "x86_64-pc-linux-gnu-4.7.3" > /dev/null 2>&1
-		source /etc/profile
-		echo "dev-lang/ruby O3" | sudo tee /etc/portage/package.env > /dev/null
-		gcc --version | head -n 1
-		cat /etc/portage/package.env
-		echo ""
-
-	elif [[ $1 == "gcc_4.8_O2" ]]; then
-		sudo gcc-config "x86_64-pc-linux-gnu-4.8.3" > /dev/null 2>&1
-		source /etc/profile
-		echo "dev-lang/ruby O2" | sudo tee /etc/portage/package.env > /dev/null
-		gcc --version | head -n 1
-		cat /etc/portage/package.env
-		echo ""
-
-	elif [[ $1 == "gcc_4.8_O3" ]]; then
-		sudo gcc-config "x86_64-pc-linux-gnu-4.8.3" > /dev/null 2>&1
-		source /etc/profile
-		echo "dev-lang/ruby O3" | sudo tee /etc/portage/package.env > /dev/null
-		gcc --version | head -n 1
-		cat /etc/portage/package.env
-		echo ""
-
-	elif [[ $1 == "gcc_4.9_O2" ]]; then
-		sudo gcc-config "x86_64-pc-linux-gnu-4.9.2" > /dev/null 2>&1
-		source /etc/profile
-		echo "dev-lang/ruby O2" | sudo tee /etc/portage/package.env > /dev/null
-		gcc --version | head -n 1
-		cat /etc/portage/package.env
-		echo ""
-
-	elif [[ $1 == "gcc_4.9_O3" ]]; then
-		sudo gcc-config "x86_64-pc-linux-gnu-4.9.2" > /dev/null 2>&1
-		source /etc/profile
-		echo "dev-lang/ruby O3" | sudo tee /etc/portage/package.env > /dev/null
-		gcc --version | head -n 1
-		cat /etc/portage/package.env
-		echo ""
-
-	elif [[ $1 == "clang_3.2" ]]; then
-		EMERGE "sys-devel/clang:0/3.2" > /dev/null 2>&1
-		echo "dev-lang/ruby Clang" | sudo tee /etc/portage/package.env > /dev/null
+	elif [[ $COMPILER == "clang" ]]; then
+		EMERGE "--usepkg $VERSION" > /dev/null 2>&1
 		clang --version | head -n 1
-		cat /etc/portage/package.env
-		echo ""
-
-	elif [[ $1 == "clang_3.3" ]]; then
-		EMERGE "sys-devel/clang:0/3.3" > /dev/null 2>&1
-		echo "dev-lang/ruby Clang" | sudo tee /etc/portage/package.env > /dev/null
-		clang --version | head -n 1
-		cat /etc/portage/package.env
-		echo ""
-
-	elif [[ $1 == "clang_3.4" ]]; then
-		EMERGE "sys-devel/clang:0/3.4" > /dev/null 2>&1
-		echo "dev-lang/ruby Clang" | sudo tee /etc/portage/package.env > /dev/null
-		clang --version | head -n 1
-		cat /etc/portage/package.env
-		echo ""
-
-	elif [[ $1 == "clang_3.5" ]]; then
-		EMERGE "sys-devel/clang:0/3.5" > /dev/null 2>&1
-		echo "dev-lang/ruby Clang" | sudo tee /etc/portage/package.env > /dev/null
-		clang --version | head -n 1
-		cat /etc/portage/package.env
-		echo ""
-
 	fi
 }
 
@@ -117,22 +44,23 @@ function BENCH() {
 }
 
 COMPILERS=(
-	gcc_4.4_O2
-	gcc_4.4_O3
-	gcc_4.7_O2
-	gcc_4.7_O3
-	gcc_4.8_O2
-	gcc_4.8_O3
-	gcc_4.9_O2
-	gcc_4.9_O3
-	clang_3.2
-	clang_3.3
-	clang_3.4
-	clang_3.5
+	"gcc x86_64-pc-linux-gnu-4.4.7 O2"
+	"gcc x86_64-pc-linux-gnu-4.4.7 O3"
+	"gcc x86_64-pc-linux-gnu-4.7.3 O2"
+	"gcc x86_64-pc-linux-gnu-4.7.3 O3"
+	"gcc x86_64-pc-linux-gnu-4.8.3 O2"
+	"gcc x86_64-pc-linux-gnu-4.8.3 O3"
+	"gcc x86_64-pc-linux-gnu-4.9.2 O2"
+	"gcc x86_64-pc-linux-gnu-4.9.2 O3"
+	"clang sys-devel/clang:0/3.2 clang"
+	"clang sys-devel/clang:0/3.3 clang"
+	"clang sys-devel/clang:0/3.4 clang"
+	"clang sys-devel/clang:0/3.5 clang"
 	)
 
+PREPARE
 for COMPILER in "${COMPILERS[@]}"; do
-	SETCOMP "$COMPILER"
+	SETCOMP $COMPILER
 	#EMERGE "dev-lang/ruby:2.1"
 	#BENCH
 done
