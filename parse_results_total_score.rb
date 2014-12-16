@@ -8,8 +8,9 @@ results.lines.each_with_index do |line, index|
 
 	unsorted_results = line.split(',').drop(2)
 	sorted_results = unsorted_results.sort.reverse
+
 	sorted_results.each_with_index do |a, i|
-		unsorted_results[(unsorted_results.index(a))] = i
+		unsorted_results[(unsorted_results.index(a))] = (sorted_results.length - i)
 	end
 
 	puts unsorted_results.join(',')
