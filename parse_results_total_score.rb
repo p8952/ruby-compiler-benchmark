@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 
-results = File.read(Dir.glob('ruby-benchmark-suite/results/rbs/*.csv').first)
+results_file = Dir.glob('ruby-benchmark-suite/results/rbs/*.csv').last
+exit if results_file.nil?
+results = File.read(results_file)
 results.lines.each_with_index do |line, index|
 	next if index == 0
 
