@@ -2,9 +2,36 @@
 set -o errexit
 
 function PREPARE() {
-	sudo rm -rf /var/tmp/portage/* || true
+	sudo cp /vagrant/make.conf /etc/portage/make.conf
+	sudo eselect news read all > /dev/null
 	git clone git://github.com/acangiano/ruby-benchmark-suite.git || true
 	rm -rf ruby-benchmark-suite/results/* || true
+}
+
+function SETCOMP() {
+	echo "app-admin/eselect-ruby $3" | sudo tee /etc/portage/package.env > /dev/null
+	echo "dev-libs/libyaml $3" | sudo tee -a /etc/portage/package.env > /dev/null
+	echo "dev-ruby/json $3" | sudo tee -a /etc/portage/package.env > /dev/null
+	echo "dev-ruby/racc $3" | sudo tee -a /etc/portage/package.env > /dev/null
+	echo "dev-ruby/rake $3" | sudo tee -a /etc/portage/package.env > /dev/null
+	echo "dev-ruby/rdoc $3" | sudo tee -a /etc/portage/package.env > /dev/null
+	echo "dev-ruby/rubygems $3" | sudo tee -a /etc/portage/package.env > /dev/null
+	echo "dev-util/ragel $3" | sudo tee -a /etc/portage/package.env > /dev/null
+	echo "virtual/rubygems $3" | sudo tee -a /etc/portage/package.env > /dev/null
+
+	if [[ $1 == "gcc" ]]; then
+		sudo gcc-config "$2" > /dev/null 2>&1
+		source /etc/profile
+		gcc --version | head -n 1
+	elif [[ $1 == "clang" ]]; then
+		EMERGE "--usepkg $2" > /dev/null 2>&1
+		clang --version | head -n 1
+	fi
+}
+
+function UNMERGE() {
+	sudo emerge --unmerge --quiet $1 || true
+	sudo emerge --depclean --quiet
 }
 
 function EMERGE() {
@@ -18,28 +45,9 @@ function EMERGE() {
 	sudo emerge --quiet $1
 }
 
-function SETCOMP() {
-	COMPILER=$1
-	VERSION=$2
-	OPTIMIZATION=$3
-
-	echo "dev-lang/ruby $OPTIMIZATION" | sudo tee /etc/portage/package.env > /dev/null
-
-	if [[ $COMPILER == "gcc" ]]; then
-		sudo gcc-config "$VERSION" > /dev/null 2>&1
-		source /etc/profile
-		gcc --version | head -n 1
-	elif [[ $COMPILER == "clang" ]]; then
-		EMERGE "--usepkg $VERSION" > /dev/null 2>&1
-		clang --version | head -n 1
-	fi
-}
-
 function BENCH() {
 	cd ruby-benchmark-suite
-	for i in {1..3}; do
-		rake bench
-	done
+	rake bench
 	cd ..
 }
 
@@ -61,6 +69,7 @@ COMPILERS=(
 PREPARE
 for COMPILER in "${COMPILERS[@]}"; do
 	SETCOMP $COMPILER
-	#EMERGE "dev-lang/ruby:2.1"
-	#BENCH
+	UNMERGE "dev-lang/ruby"
+	EMERGE "dev-lang/ruby"
+	BENCH
 done
