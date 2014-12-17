@@ -24,13 +24,15 @@ Collect Benchmark Results:
 	./parse_results_total_score.rb
 
 
-Running the full benchmark suite for all compiler takes around 12 hours. If you
-only want to run it with certain compilers remove the ones you don't want from
-the COMPILERS array on line 54 in benchmark.sh If you only want to run part of
-the benchmark suite replace:
+Running the full benchmark suite for all compilers takes around 12 hours. 
+
+If you only want to run it with certain compilers remove the ones you don't want from
+the COMPILERS array on line 54 of benchmark.sh 
+
+If you only want to run part of the benchmark suite replace:
 
     rake bench
 
 On line 50 of benchmark.sh with something like:
 
-    rake bench:pattern  PATTERN=benchmarks/micro-benchmarks/bm_app_*.rb
+    rake bench:pattern PATTERN=benchmarks/micro-benchmarks/bm_app_*.rb
