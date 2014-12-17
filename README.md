@@ -33,4 +33,4 @@ the benchmark suite replace:
 
 On line 50 of benchmark.sh with something like:
 
-   rake bench:pattern  PATTERN=benchmarks/micro-benchmarks/bm_app_*.rb
+    rake bench:pattern  PATTERN=benchmarks/micro-benchmarks/bm_app_*.rb
